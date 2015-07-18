@@ -1,12 +1,12 @@
 {View} = require '../node_modules/atom-space-pen-views'
 
 module.exports =
-class StartSessionView extends View
-
-  @content: (@sessionId) ->
-    @div 'Your session ID is: ', =>
-      @span class: 'value' , @sessionId
-      @span class: 'copy', 'Copy to clipboard'
+class JoinCoconutView extends View
+  @content: ->
+    @div class:'styleguide padded pane-item native-key-bindings' , =>
+      @div 'Enter the session ID:'
+      @textarea 'fuego'
+      @span class:'button', 'ok'
 
   initialize: (serializeState) ->
 
