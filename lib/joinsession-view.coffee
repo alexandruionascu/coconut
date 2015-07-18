@@ -4,9 +4,9 @@ module.exports =
 class JoinCoconutView extends View
   @content: ->
     @div class:'styleguide padded pane-item native-key-bindings' , =>
-      @div 'Enter the session ID:'
-      @textarea 'fuego'
-      @span class:'button', 'ok'
+      @div class:'header','Enter the session ID:'
+      @textarea class: 'sessionId' , 'session ID'
+      @span class:'button', 'Join'
 
   initialize: (serializeState) ->
 
