@@ -79,7 +79,7 @@ module.exports = Coconut =
       data =
         sessionId : guid
         message : key.encrypt(event.newText, 'base64')
-        range: event.newRange
+        event : event
       socket.emit('message', data)
 
 
@@ -88,9 +88,21 @@ module.exports = Coconut =
     socket.on 'message', (data) ->
       key.importKey clientKey, 'public'
       console.log('received: ' + key.decrypt(data.message, 'utf8'))
-      #TODO: infinite loop
+      #TODO: ENCRYPTION OF THE NEW/OLD TEXT
       triggerEvent = false
-      atom.workspace.getActiveTextEditor().setTextInBufferRange(data.range, key.decrypt(data.message, 'utf8'))
+      event = data.event
+      console.log event
+      #Update the active text editor with no event triggering
+      if event.newText.length == 0
+        #Then delete
+        buffer.delete data.event.oldRange
+      else if event.oldRange
+        #Then replace
+        buffer.setTextInRange(data.event.oldRange, data.event.newText)
+      else
+        #Insert
+        buffer.insert data.event.newRange.start, data.event.newText
+
       triggerEvent = true
 
 

@@ -4,7 +4,8 @@ module.exports =
 class StartSessionView extends View
 
   @content: (@sessionId) ->
-    @div 'Your session ID is: ', =>
+    @div  =>
+      @span 'Your session ID is: '
       @span class: 'value' , @sessionId
       @span class: 'copy', 'Copy to clipboard'
 
