@@ -11,6 +11,8 @@ StartSessionView = require('./startsession-view')
 CoconutView = require './coconut-view'
 {CompositeDisposable} = require 'atom'
 
+triggerEvent = true
+
 
 guid = null
 #Public and private key pair
@@ -69,6 +71,8 @@ module.exports = Coconut =
     #Add text buffer change events
     buffer = atom.workspace.getActiveTextEditor().buffer
     @subscriptions.add buffer.onDidChange (event) =>
+      if triggerEvent == false
+        return
       console.log event
       #Import server's public key into the key pair
       key.importKey serverKey, 'public'
@@ -78,13 +82,17 @@ module.exports = Coconut =
         range: event.newRange
       socket.emit('message', data)
 
+
     #Socket listen event
     #Add socket change event
     socket.on 'message', (data) ->
       key.importKey clientKey, 'public'
       console.log('received: ' + key.decrypt(data.message, 'utf8'))
       #TODO: infinite loop
+      triggerEvent = false
       atom.workspace.getActiveTextEditor().setTextInBufferRange(data.range, key.decrypt(data.message, 'utf8'))
+      triggerEvent = true
+
 
 
   generateKeys: ->
