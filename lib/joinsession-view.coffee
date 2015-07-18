@@ -4,7 +4,7 @@ module.exports =
 class JoinCoconutView extends View
   @content: ->
     @div class:'styleguide padded pane-item native-key-bindings' , =>
-      @div class:'header','Enter the session ID:'
+      @div class:'sessionHeader','Enter the session ID:'
       @textarea class: 'sessionId' , 'session ID'
       @span class:'button', 'Join'
 
