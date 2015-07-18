@@ -11,9 +11,16 @@ StartSessionView = require('./startsession-view')
 CoconutView = require './coconut-view'
 {CompositeDisposable} = require 'atom'
 
+startSessionView = null
+startSessionPanel = null
+joinSessionView = null
+joinSessionPanel = null
+
+#Prevent infinite looping
 triggerEvent = true
 
 
+#Session ID
 guid = null
 #Public and private key pair
 key = null
@@ -41,12 +48,12 @@ module.exports = Coconut =
     guid = newGuid()
 
     #Add join session panel
-    @joinSessionView = new JoinSessionView()
-    @joinSessionPanel = atom.workspace.addModalPanel(item: @joinSessionView.element, visible: false)
+    joinSessionView = new JoinSessionView()
+    joinSessionPanel = atom.workspace.addModalPanel(item: joinSessionView.element, visible: false)
 
     #Add start session panel
-    @startSessionView = new StartSessionView(guid)
-    @startSessionPanel = atom.workspace.addModalPanel(item: @startSessionView.element, visible: false)
+    startSessionView = new StartSessionView(guid)
+    startSessionPanel = atom.workspace.addModalPanel(item: startSessionView.element, visible: false)
 
     # Events subscribed to in atom's system can be easily cleaned up with a CompositeDisposable
     @subscriptions = new CompositeDisposable
@@ -143,6 +150,8 @@ module.exports = Coconut =
         sessionId : guid
         publicKey: clientKey
       socket.emit('join room', dataObject)
+      #Hide the modal
+      startSessionPanel.hide()
 
   #Join the room typed by the user
   addJoinSessionEvent: ->
@@ -156,7 +165,7 @@ module.exports = Coconut =
         publicKey: clientKey
       socket.emit('join room', dataObject)
       #Hide modal
-      $('.button').parent().parent().hide()
+      joinSessionPanel.hide()
 
 
   #Coconut activation commands
@@ -170,33 +179,30 @@ module.exports = Coconut =
 
   startSession: ->
     console.log "Session started"
-    if @startSessionPanel.isVisible()
-      @startSessionPanel.hide()
+    if startSessionPanel.isVisible()
+      startSessionPanel.hide()
     else
       #Edit panel value
-      @guid = newGuid()
+      guid = newGuid()
       $('.value').val(guid)
-      @startSessionPanel.show()
+      startSessionPanel.show()
 
   joinSession: ->
     console.log "Joined session"
-    if @joinSessionPanel.isVisible()
-      @joinSessionPanel.hide()
+    if joinSessionPanel.isVisible()
+      joinSessionPanel.hide()
     else
-      @joinSessionPanel.show()
+      joinSessionPanel.show()
 
   #Serializations and disposals
   deactivate: ->
     #destroy modals and views
-    @modalPanel.destroy()
-    @joinSessionPanel.destroy()
-    @startSessionPanel.destroy()
+    joinSessionPanel.destroy()
+    startSessionPanel.destroy()
     @subscriptions.dispose()
-    @coconutView.destroy()
-    @joinSessionView.destroy()
-    @startSessionView.destroy()
+    joinSessionView.destroy()
+    startSessionView.destroy()
 
   serialize: ->
-    coconutViewState: @coconutView.serialize()
-    joinSessionViewState : @joinSessionView.serialize()
-    startSessionViewState: @startSessionView.serialize()
+    joinSessionViewState : joinSessionView.serialize()
+    startSessionViewState: startSessionView.serialize()
