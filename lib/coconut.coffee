@@ -80,37 +80,37 @@ module.exports = Coconut =
     @subscriptions.add buffer.onDidChange (event) =>
       if triggerEvent == false
         return
-      console.log event
       #Import server's public key into the key pair
       key.importKey serverKey, 'public'
-      data =
-        sessionId : guid
-        message : key.encrypt(event.newText, 'base64')
-        event : event
-      socket.emit('message', data)
+      #Convert the event object to string
+      data = JSON.stringify(event)
+      #Encrypt the string
+      encryptedData = key.encrypt(data, 'base64')
+      #Emit to server
+      socket.emit('message', encryptedData)
 
 
     #Socket listen event
     #Add socket change event
     socket.on 'message', (data) ->
       key.importKey clientKey, 'public'
-      console.log('received: ' + key.decrypt(data.message, 'utf8'))
-      #TODO: ENCRYPTION OF THE NEW/OLD TEXT
+      decrypted = key.decrypt(data, 'utf8')
+      #Parse data into an object
+      event = JSON.parse(decrypted)
+      #Prevent triggering
       triggerEvent = false
-      event = data.event
-      console.log event
       #Update the active text editor with no event triggering
       if event.newText.length == 0
         #Then delete
-        buffer.delete data.event.oldRange
+        buffer.delete event.oldRange
       else if event.oldRange
         #Then replace
-        buffer.setTextInRange(data.event.oldRange, data.event.newText)
+        buffer.setTextInRange(event.oldRange, event.newText)
       else
         #Insert
-        buffer.insert data.event.newRange.start, data.event.newText
-
+        buffer.insert event.newRange.start, event.newText
       triggerEvent = true
+
 
 
 
