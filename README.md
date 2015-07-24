@@ -1,5 +1,8 @@
-# coconut package
+# Coconut
 
-A short description of your package.
+Coconut is a paired programming package for Atom. It works fast and secure and it can be used with an Android companion app. The companion app can send audio notes in user's code.
 
-![A screenshot of your package](https://raw.githubusercontent.com/alexandruionascu/coconut/master/coconut_demo.gif)
+[Coconut server repository](https://github.com/alexandruionascu/coconut_server)
+
+
+![Coconut package demo](https://raw.githubusercontent.com/alexandruionascu/coconut/master/coconut_demo.gif)
