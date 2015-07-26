@@ -5,9 +5,16 @@ io = require('../node_modules/socket.io-client')
 socket = io.connect('http://localhost:3000')
 newGuid = require './aux_tools/guid'
 
+
+#Require QR Code generator
+require('../node_modules/webcomponents.js/webcomponents')
+require('../node_modules/webcomponent-qr-code/src/qr-code')
+
+
 #Views
 JoinSessionView = require('./joinsession-view')
 StartSessionView = require('./startsession-view')
+SyncView = require('./sync-view')
 CoconutView = require './coconut-view'
 {CompositeDisposable} = require 'atom'
 
@@ -15,6 +22,7 @@ startSessionView = null
 startSessionPanel = null
 joinSessionView = null
 joinSessionPanel = null
+syncPanel = null
 
 #Prevent infinite looping
 triggerEvent = true
@@ -22,6 +30,8 @@ triggerEvent = true
 
 #Session ID
 guid = null
+#Pairing ID for companion app
+pairId = null
 #Public and private key pair
 key = null
 #Server public key
@@ -32,12 +42,15 @@ clientKey= null
 
 module.exports = Coconut =
 
-  #TODO: remove toggle view
+  #TODO: Remove toggle view
   coconuttestView: null
   modalPanel: null
   subscriptions: null
   joinSessionView: null
   startSessionView: null
+  syncView: null
+
+
 
   activate: (state) ->
     #Add toggle panel
@@ -46,6 +59,7 @@ module.exports = Coconut =
     #@modalPanel = atom.workspace.addModalPanel(item: @coconuttestView.getElement, visible: false)
 
     guid = newGuid()
+    pairId = newGuid()
 
     #Add join session panel
     joinSessionView = new JoinSessionView()
@@ -55,6 +69,10 @@ module.exports = Coconut =
     startSessionView = new StartSessionView(guid)
     startSessionPanel = atom.workspace.addModalPanel(item: startSessionView.element, visible: false)
 
+    #Add sync panel
+    syncView = new SyncView(pairId)
+    syncPanel = atom.workspace.addModalPanel(item: syncView.element, visible: false)
+
     # Events subscribed to in atom's system can be easily cleaned up with a CompositeDisposable
     @subscriptions = new CompositeDisposable
 
@@ -62,6 +80,13 @@ module.exports = Coconut =
     @subscriptions.add atom.commands.add 'atom-workspace', 'coconut:toggle': => @toggle()
     @subscriptions.add atom.commands.add 'atom-workspace', 'coconut:startSession': => @startSession()
     @subscriptions.add atom.commands.add 'atom-workspace', 'coconut:joinSession': => @joinSession()
+    @subscriptions.add atom.commands.add 'atom-workspace', 'coconut:sync': => @sync()
+
+    #Add qr code in modal
+    $('.qr-text').append('<qr-code modulesize="10" data="' + pairId + '"></qr-code>')
+    #Hide sync panel at click
+    $('.qr-text').click ->
+      syncPanel.hide()
 
     #Generate a pair of keys for RSA
     @generateKeys()
@@ -74,6 +99,7 @@ module.exports = Coconut =
     #Join session event
     @addJoinSessionEvent()
 
+    #TODO: change buffer
     #Text buffer change event
     #Add text buffer change events
     buffer = atom.workspace.getActiveTextEditor().buffer
@@ -111,6 +137,22 @@ module.exports = Coconut =
         buffer.insert event.newRange.start, event.newText
       triggerEvent = true
 
+
+    #Socket disconnect event
+    socket.on 'disconnect', ->
+      alert 'You have been disconnected, please reload the window.'
+
+    #Socket event when someone asks to join the session and sync the text
+    socket.on 'request init' , ->
+      currentText = atom.workspace.getActiveTextEditor().getText()
+      console.log currentText
+      console.log 'requested--yes'
+
+      key.importKey serverKey, 'public'
+      #Encrypt the string
+      encryptedData = key.encrypt(currentText, 'base64')
+      #Emit to server
+      socket.emit('init', encryptedData)
 
 
 
@@ -164,8 +206,23 @@ module.exports = Coconut =
         sessionId : guid
         publicKey: clientKey
       socket.emit('join room', dataObject)
+      atom.workspace.open().then ->
+        editorNum = (atom.workspace.getTextEditors()).length
+        atom.workspace.getTextEditors()[editorNum - 1].insertText 'fuegooo'
+        console.log ((atom.workspace.getTextEditors()).length)
+
+        #Get the current text of the session
+        socket.on 'init' , (data) ->
+          #  key.importKey clientKey, 'public'
+          #  decrypted = key.decrypt(data, 'utf8')
+          console.log 'synced : ' + data
+          triggerEvent = false
+          atom.workspace.getActiveTextEditor().insertText(data)
+          triggerEvent = true
+
       #Hide modal
       joinSessionPanel.hide()
+
 
 
   #Coconut activation commands
@@ -193,6 +250,12 @@ module.exports = Coconut =
       joinSessionPanel.hide()
     else
       joinSessionPanel.show()
+
+  sync: ->
+    if syncPanel.isVisible()
+      syncPanel.hide()
+    else
+      syncPanel.show()
 
   #Serializations and disposals
   deactivate: ->
