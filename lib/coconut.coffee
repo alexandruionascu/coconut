@@ -61,6 +61,8 @@ module.exports = Coconut =
     guid = newGuid()
     pairId = newGuid()
 
+
+
     #Add join session panel
     joinSessionView = new JoinSessionView()
     joinSessionPanel = atom.workspace.addModalPanel(item: joinSessionView.element, visible: false)
@@ -73,6 +75,26 @@ module.exports = Coconut =
     syncView = new SyncView(pairId)
     syncPanel = atom.workspace.addModalPanel(item: syncView.element, visible: false)
 
+
+    #Add qr code in modal
+    $('.qr-text').append('<qr-code modulesize="10" data="' + pairId + '"></qr-code>')
+    $('.qr-text').focus()
+    #Hide sync panel at click
+    $('.qr-text').click ->
+      syncPanel.hide()
+
+
+    #Audio pair
+    socket.emit('pair audio', pairId)
+    socket.on 'pair id', ->
+        console.log 'Audio paired!'
+
+
+    socket.on 'receive audio' , (data) ->
+      console.log data
+      atom.workspace.getActiveTextEditor().insertText data
+
+
     # Events subscribed to in atom's system can be easily cleaned up with a CompositeDisposable
     @subscriptions = new CompositeDisposable
 
@@ -82,11 +104,9 @@ module.exports = Coconut =
     @subscriptions.add atom.commands.add 'atom-workspace', 'coconut:joinSession': => @joinSession()
     @subscriptions.add atom.commands.add 'atom-workspace', 'coconut:sync': => @sync()
 
-    #Add qr code in modal
-    $('.qr-text').append('<qr-code modulesize="10" data="' + pairId + '"></qr-code>')
-    #Hide sync panel at click
-    $('.qr-text').click ->
-      syncPanel.hide()
+
+
+
 
     #Generate a pair of keys for RSA
     @generateKeys()
@@ -99,7 +119,10 @@ module.exports = Coconut =
     #Join session event
     @addJoinSessionEvent()
 
-    #TODO: change buffer
+    #Audio sync
+    socket.emit('audio sync', pairId)
+
+    #TODO: change buffer, adn the reference for evetn
     #Text buffer change event
     #Add text buffer change events
     buffer = atom.workspace.getActiveTextEditor().buffer
