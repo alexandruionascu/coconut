@@ -16,6 +16,8 @@ JoinSessionView = require('./joinsession-view')
 StartSessionView = require('./startsession-view')
 SyncView = require('./sync-view')
 FacebookView = require('./facebook-view')
+WhatsappView = require('./whatsapp-view')
+SlackView = require('./slack-view')
 CoconutView = require './coconut-view'
 {CompositeDisposable} = require 'atom'
 
@@ -25,6 +27,8 @@ joinSessionView = null
 joinSessionPanel = null
 syncPanel = null
 facebookPanel = null
+slackPanel = null
+whatsappPanel = null
 
 #Prevent infinite looping
 triggerEvent = true
@@ -85,6 +89,12 @@ module.exports = Coconut =
     facebookView = new FacebookView()
     facebookPanel = atom.workspace.addRightPanel(item: facebookView.element, visible: false)
 
+    whatsappView = new WhatsappView()
+    whatsappPanel = atom.workspace.addRightPanel(item: whatsappView.element, visible:false)
+
+    slackView = new SlackView()
+    slackPanel = atom.workspace.addRightPanel(item: slackView.element, visible: false)
+
 
     #Add qr code in modal
     $('.qr-text').append('<qr-code modulesize="10" data="' + pairId + '"></qr-code>')
@@ -94,6 +104,8 @@ module.exports = Coconut =
       syncPanel.hide()
 
     $('.facebook').append('<webview id="foo" src="https://www.messenger.com/" style="display:inline-block; width:640px; height:100%"></webview>')
+    $('.whatsapp').append('<webview id="foo" src="https://www.whatsapp.com/" style="display:inline-block; width:640px; height:100%"></webview>')
+    $('.slack').append('<webview id="foo" src="https://www.slack.com/signin/" style="display:inline-block; width:640px; height:100%"></webview>')
 
 
     #Audio pair
@@ -116,6 +128,8 @@ module.exports = Coconut =
     subscriptions.add atom.commands.add 'atom-workspace', 'coconut:joinSession': => @joinSession()
     subscriptions.add atom.commands.add 'atom-workspace', 'coconut:sync': => @sync()
     subscriptions.add atom.commands.add 'atom-workspace', 'coconut:facebookToggle': => @facebookToggle()
+    subscriptions.add atom.commands.add 'atom-workspace', 'coconut:whatsappToggle': => @whatsappToggle()
+    subscriptions.add atom.commands.add 'atom-workspace', 'coconut:slackToggle': => @slackToggle()
 
 
     #Generate a pair of keys for RSA
@@ -273,11 +287,21 @@ module.exports = Coconut =
       @modalPanel.show()
 
   facebookToggle: ->
-    console.log 'TOGGLED!'
     if facebookPanel.isVisible()
       facebookPanel.hide()
     else
       facebookPanel.show()
+
+  whatsappToggle: ->
+    if whatsappPanel.isVisible()
+      whatsappPanel.hide()
+    whatsappPanel.show()
+
+  slackToggle: ->
+    if slackPanel.isVisible()
+      slackPanel.hide()
+    slackPanel.show()
+
 
   startSession: ->
     console.log "Session started"

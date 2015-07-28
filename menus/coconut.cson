@@ -31,6 +31,14 @@
         {
           'label': 'Facebook Toggle'
           'command': 'coconut:facebookToggle'
+        },
+        {
+          'label': 'WhatsApp Toggle'
+          'command': 'coconut:whatsappToggle'
+        },
+        {
+          'label': 'Slack Toggle'
+          'command': 'coconut:slackToggle'
         }
       ]
     ]
