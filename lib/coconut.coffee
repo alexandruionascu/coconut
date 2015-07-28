@@ -15,6 +15,7 @@ require('../node_modules/webcomponent-qr-code/src/qr-code')
 JoinSessionView = require('./joinsession-view')
 StartSessionView = require('./startsession-view')
 SyncView = require('./sync-view')
+FacebookView = require('./facebook-view')
 CoconutView = require './coconut-view'
 {CompositeDisposable} = require 'atom'
 
@@ -23,6 +24,7 @@ startSessionPanel = null
 joinSessionView = null
 joinSessionPanel = null
 syncPanel = null
+facebookPanel = null
 
 #Prevent infinite looping
 triggerEvent = true
@@ -39,6 +41,9 @@ serverKey = null
 #Client's public key
 clientKey= null
 
+#Hold events
+subscriptions = null
+
 
 module.exports = Coconut =
 
@@ -49,6 +54,7 @@ module.exports = Coconut =
   joinSessionView: null
   startSessionView: null
   syncView: null
+  facebookView: null
 
 
 
@@ -75,6 +81,10 @@ module.exports = Coconut =
     syncView = new SyncView(pairId)
     syncPanel = atom.workspace.addModalPanel(item: syncView.element, visible: false)
 
+    #Add Facebook panel
+    facebookView = new FacebookView()
+    facebookPanel = atom.workspace.addRightPanel(item: facebookView.element, visible: false)
+
 
     #Add qr code in modal
     $('.qr-text').append('<qr-code modulesize="10" data="' + pairId + '"></qr-code>')
@@ -82,6 +92,8 @@ module.exports = Coconut =
     #Hide sync panel at click
     $('.qr-text').click ->
       syncPanel.hide()
+
+    $('.facebook').append('<webview id="foo" src="https://www.messenger.com/" style="display:inline-block; width:640px; height:100%"></webview>')
 
 
     #Audio pair
@@ -96,16 +108,14 @@ module.exports = Coconut =
 
 
     # Events subscribed to in atom's system can be easily cleaned up with a CompositeDisposable
-    @subscriptions = new CompositeDisposable
+    subscriptions = new CompositeDisposable
 
     # Register command that toggles this view
-    @subscriptions.add atom.commands.add 'atom-workspace', 'coconut:toggle': => @toggle()
-    @subscriptions.add atom.commands.add 'atom-workspace', 'coconut:startSession': => @startSession()
-    @subscriptions.add atom.commands.add 'atom-workspace', 'coconut:joinSession': => @joinSession()
-    @subscriptions.add atom.commands.add 'atom-workspace', 'coconut:sync': => @sync()
-
-
-
+    subscriptions.add atom.commands.add 'atom-workspace', 'coconut:toggle': => @toggle()
+    subscriptions.add atom.commands.add 'atom-workspace', 'coconut:startSession': => @startSession()
+    subscriptions.add atom.commands.add 'atom-workspace', 'coconut:joinSession': => @joinSession()
+    subscriptions.add atom.commands.add 'atom-workspace', 'coconut:sync': => @sync()
+    subscriptions.add atom.commands.add 'atom-workspace', 'coconut:facebookToggle': => @facebookToggle()
 
 
     #Generate a pair of keys for RSA
@@ -113,71 +123,12 @@ module.exports = Coconut =
     #Get server's key
     @getServerKey()
 
-    #Start session event
-    @addStartSessionEvent()
-
-    #Join session event
-    @addJoinSessionEvent()
-
     #Audio sync
     socket.emit('audio sync', pairId)
-
-    #TODO: change buffer, adn the reference for evetn
-    #Text buffer change event
-    #Add text buffer change events
-    buffer = atom.workspace.getActiveTextEditor().buffer
-    @subscriptions.add buffer.onDidChange (event) =>
-      if triggerEvent == false
-        return
-      #Import server's public key into the key pair
-      key.importKey serverKey, 'public'
-      #Convert the event object to string
-      data = JSON.stringify(event)
-      #Encrypt the string
-      encryptedData = key.encrypt(data, 'base64')
-      #Emit to server
-      socket.emit('message', encryptedData)
-
-
-    #Socket listen event
-    #Add socket change event
-    socket.on 'message', (data) ->
-      key.importKey clientKey, 'public'
-      decrypted = key.decrypt(data, 'utf8')
-      #Parse data into an object
-      event = JSON.parse(decrypted)
-      #Prevent triggering
-      triggerEvent = false
-      #Update the active text editor with no event triggering
-      if event.newText.length == 0
-        #Then delete
-        buffer.delete event.oldRange
-      else if event.oldRange
-        #Then replace
-        buffer.setTextInRange(event.oldRange, event.newText)
-      else
-        #Insert
-        buffer.insert event.newRange.start, event.newText
-      triggerEvent = true
-
 
     #Socket disconnect event
     socket.on 'disconnect', ->
       alert 'You have been disconnected, please reload the window.'
-
-    #Socket event when someone asks to join the session and sync the text
-    socket.on 'request init' , ->
-      currentText = atom.workspace.getActiveTextEditor().getText()
-      console.log currentText
-      console.log 'requested--yes'
-
-      key.importKey serverKey, 'public'
-      #Encrypt the string
-      encryptedData = key.encrypt(currentText, 'base64')
-      #Emit to server
-      socket.emit('init', encryptedData)
-
-
 
   generateKeys: ->
     #Set key's length to 512 bits
@@ -210,13 +161,20 @@ module.exports = Coconut =
       console.log guid
       #Copy to clipboard the session ID
       atom.clipboard.write(guid)
-      #Join the room
-      dataObject =
-        sessionId : guid
-        publicKey: clientKey
-      socket.emit('join room', dataObject)
       #Hide the modal
       startSessionPanel.hide()
+
+    #Join the room
+    dataObject =
+      sessionId : guid
+      publicKey: clientKey
+    socket.emit('join room', dataObject)
+    #atom.workspace.getActiveTextEditor().insertText 'bai '
+    @addReceiveChangeEvent(atom.workspace.getActiveTextEditor().buffer)
+    @addEmitChangeEvent(atom.workspace.getActiveTextEditor().buffer)
+    @addRequestInitEvent()
+
+
 
   #Join the room typed by the user
   addJoinSessionEvent: ->
@@ -229,23 +187,78 @@ module.exports = Coconut =
         sessionId : guid
         publicKey: clientKey
       socket.emit('join room', dataObject)
-      atom.workspace.open().then ->
-        editorNum = (atom.workspace.getTextEditors()).length
-        atom.workspace.getTextEditors()[editorNum - 1].insertText 'fuegooo'
-        console.log ((atom.workspace.getTextEditors()).length)
-
-        #Get the current text of the session
-        socket.on 'init' , (data) ->
-          #  key.importKey clientKey, 'public'
-          #  decrypted = key.decrypt(data, 'utf8')
-          console.log 'synced : ' + data
-          triggerEvent = false
-          atom.workspace.getActiveTextEditor().insertText(data)
-          triggerEvent = true
-
       #Hide modal
       joinSessionPanel.hide()
 
+    @addEmitChangeEvent(atom.workspace.getActiveTextEditor().buffer)
+    @addReceiveChangeEvent(atom.workspace.getActiveTextEditor().buffer)
+    @addRequestInitEvent(atom.workspace.getActiveTextEditor().buffer)
+
+
+    #Get the current text of the session
+    socket.on 'init' , (data) ->
+      #  key.importKey clientKey, 'public'
+      #  decrypted = key.decrypt(data, 'utf8')
+      console.log 'synced : ' + data
+      triggerEvent = false
+      atom.workspace.getActiveTextEditor().insertText(data)
+      triggerEvent = true
+
+
+
+
+  #Text buffer change event
+  addEmitChangeEvent: (buffer) ->
+    #Add text buffer change events
+    subscriptions.add buffer.onDidChange (event) =>
+      if triggerEvent == false
+        return
+      #Import server's public key into the key pair
+      key.importKey serverKey, 'public'
+      #Convert the event object to string
+      data = JSON.stringify(event)
+      #Encrypt the string
+      encryptedData = key.encrypt(data, 'base64')
+      #Emit to server
+      socket.emit('message', encryptedData)
+
+
+  #Socket listen event
+  addReceiveChangeEvent: (buffer) ->
+      #Add socket change event
+      socket.on 'message', (data) ->
+        console.log 'Received a message from a buddy'
+        key.importKey clientKey, 'public'
+        decrypted = key.decrypt(data, 'utf8')
+        #Parse data into an object
+        event = JSON.parse(decrypted)
+        #Prevent triggering
+        triggerEvent = false
+        #Update the active text editor with no event triggering
+        if event.newText.length == 0
+          #Then delete
+          buffer.delete event.oldRange
+        else if event.oldRange
+          #Then replace
+          buffer.setTextInRange(event.oldRange, event.newText)
+        else
+          #Insert
+          buffer.insert event.newRange.start, event.newText
+        triggerEvent = true
+
+
+  addRequestInitEvent: (buffer) ->
+    #Socket event when someone asks to join the session and sync the text
+    socket.on 'request init' , ->
+      currentText = atom.workspace.getActiveTextEditor().getText()
+      console.log currentText
+      console.log 'requested--yes'
+
+      key.importKey serverKey, 'public'
+      #Encrypt the string
+      encryptedData = key.encrypt(currentText, 'base64')
+      #Emit to server
+      socket.emit('init', encryptedData)
 
 
   #Coconut activation commands
@@ -257,6 +270,13 @@ module.exports = Coconut =
     else
       @modalPanel.show()
 
+  facebookToggle: ->
+    console.log 'TOGGLED!'
+    if facebookPanel.isVisible()
+      facebookPanel.hide()
+    else
+      facebookPanel.show()
+
   startSession: ->
     console.log "Session started"
     if startSessionPanel.isVisible()
@@ -266,6 +286,8 @@ module.exports = Coconut =
       guid = newGuid()
       $('.value').val(guid)
       startSessionPanel.show()
+      #Start session event
+      @addStartSessionEvent()
 
   joinSession: ->
     console.log "Joined session"
@@ -273,6 +295,9 @@ module.exports = Coconut =
       joinSessionPanel.hide()
     else
       joinSessionPanel.show()
+      #Join session event
+      @addJoinSessionEvent()
+
 
   sync: ->
     if syncPanel.isVisible()
@@ -285,7 +310,7 @@ module.exports = Coconut =
     #destroy modals and views
     joinSessionPanel.destroy()
     startSessionPanel.destroy()
-    @subscriptions.dispose()
+    subscriptions.dispose()
     joinSessionView.destroy()
     startSessionView.destroy()
 

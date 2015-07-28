@@ -6,7 +6,7 @@
   "keywords": [
   ],
   "activationCommands": {
-    "atom-workspace": ["coconut:startSession", "coconut:joinSession", "coconut:toggle", "coconut:sync"]
+    "atom-workspace": ["coconut:startSession", "coconut:joinSession", "coconut:toggle", "coconut:sync", "coconut:facebookToggle"]
   },
   "repository": "https://github.com/atom/coconut",
   "license": "MIT",
@@ -19,7 +19,7 @@
     "jquery": "2.1.4",
     "atom-space-pen-views": "2.0.5",
     "webcomponent-qr-code":"0.1.7",
-    "webcomponents.js":"0.7.2" 
+    "webcomponents.js":"0.7.2"
 
   }
 
