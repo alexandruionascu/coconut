@@ -187,6 +187,14 @@ module.exports = Coconut =
         sessionId : guid
         publicKey: clientKey
       socket.emit('join room', dataObject)
+      #Get the current text of the session
+      socket.on 'init' , (data) ->
+        #  key.importKey clientKey, 'public'
+        #  decrypted = key.decrypt(data, 'utf8')
+        console.log 'synced : ' + data
+        triggerEvent = false
+        atom.workspace.getActiveTextEditor().insertText(data)
+        triggerEvent = true
       #Hide modal
       joinSessionPanel.hide()
 
@@ -195,14 +203,8 @@ module.exports = Coconut =
     @addRequestInitEvent(atom.workspace.getActiveTextEditor().buffer)
 
 
-    #Get the current text of the session
-    socket.on 'init' , (data) ->
-      #  key.importKey clientKey, 'public'
-      #  decrypted = key.decrypt(data, 'utf8')
-      console.log 'synced : ' + data
-      triggerEvent = false
-      atom.workspace.getActiveTextEditor().insertText(data)
-      triggerEvent = true
+
+
 
 
 
