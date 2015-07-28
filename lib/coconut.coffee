@@ -18,7 +18,6 @@ SyncView = require('./sync-view')
 FacebookView = require('./facebook-view')
 WhatsappView = require('./whatsapp-view')
 SlackView = require('./slack-view')
-CoconutView = require './coconut-view'
 {CompositeDisposable} = require 'atom'
 
 startSessionView = null
@@ -51,9 +50,6 @@ subscriptions = null
 
 module.exports = Coconut =
 
-  #TODO: Remove toggle view
-  coconuttestView: null
-  modalPanel: null
   subscriptions: null
   joinSessionView: null
   startSessionView: null
@@ -63,10 +59,6 @@ module.exports = Coconut =
 
 
   activate: (state) ->
-    #Add toggle panel
-    #TODO: remove unnecesary view
-    #@coconuttestView = new CoconuttestView(state.coconuttestViewState)
-    #@modalPanel = atom.workspace.addModalPanel(item: @coconuttestView.getElement, visible: false)
 
     guid = newGuid()
     pairId = newGuid()
@@ -217,12 +209,6 @@ module.exports = Coconut =
     @addRequestInitEvent(atom.workspace.getActiveTextEditor().buffer)
 
 
-
-
-
-
-
-
   #Text buffer change event
   addEmitChangeEvent: (buffer) ->
     #Add text buffer change events
@@ -277,15 +263,6 @@ module.exports = Coconut =
       socket.emit('init', encryptedData)
 
 
-  #Coconut activation commands
-  toggle: ->
-    console.log 'Coconut was toggled!'
-
-    if @modalPanel.isVisible()
-      @modalPanel.hide()
-    else
-      @modalPanel.show()
-
   facebookToggle: ->
     if facebookPanel.isVisible()
       facebookPanel.hide()
@@ -295,12 +272,13 @@ module.exports = Coconut =
   whatsappToggle: ->
     if whatsappPanel.isVisible()
       whatsappPanel.hide()
-    whatsappPanel.show()
+    else whatsappPanel.show()
 
   slackToggle: ->
     if slackPanel.isVisible()
       slackPanel.hide()
-    slackPanel.show()
+    else
+      slackPanel.show()
 
 
   startSession: ->

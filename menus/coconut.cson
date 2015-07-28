@@ -1,10 +1,7 @@
 # See https://atom.io/docs/latest/hacking-atom-package-word-count#menus for more details
 'context-menu':
   'atom-text-editor': [
-    {
-      'label': 'Toggle coconuttest'
-      'command': 'coconut:toggle'
-    }
+
   ]
 'menu': [
   {
@@ -12,10 +9,6 @@
     'submenu': [
       'label': 'coconut'
       'submenu': [
-        {
-          'label': 'Toggle'
-          'command': 'coconut:toggle'
-        },
         {
           'label': 'Start a new session'
           'command': 'coconut:startSession'
