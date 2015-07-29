@@ -105,10 +105,10 @@ module.exports = Coconut =
     socket.on 'pair id', ->
         console.log 'Audio paired!'
 
-
+    #Receive audio note from companion
     socket.on 'receive audio' , (data) ->
       console.log data
-      atom.workspace.getActiveTextEditor().insertText data
+      atom.workspace.getActiveTextEditor().insertText(':audio:' + data)
 
 
     # Events subscribed to in atom's system can be easily cleaned up with a CompositeDisposable
@@ -116,12 +116,19 @@ module.exports = Coconut =
 
     # Register command that toggles this view
     subscriptions.add atom.commands.add 'atom-workspace', 'coconut:toggle': => @toggle()
+    subscriptions.add atom.commands.add '.editor', 'coconut:playAudioNote': => @playAudioNote()
     subscriptions.add atom.commands.add 'atom-workspace', 'coconut:startSession': => @startSession()
     subscriptions.add atom.commands.add 'atom-workspace', 'coconut:joinSession': => @joinSession()
     subscriptions.add atom.commands.add 'atom-workspace', 'coconut:sync': => @sync()
     subscriptions.add atom.commands.add 'atom-workspace', 'coconut:facebookToggle': => @facebookToggle()
     subscriptions.add atom.commands.add 'atom-workspace', 'coconut:whatsappToggle': => @whatsappToggle()
     subscriptions.add atom.commands.add 'atom-workspace', 'coconut:slackToggle': => @slackToggle()
+
+    audioElement = document.createElement('audio')
+    audioElement.setAttribute('src', 'https://coconutaudio.blob.core.windows.net/recordings/9b89b7f.mp4')
+    audioElement.setAttribute('autoplay', 'autoplay')
+
+    audioElement.play();
 
 
     #Generate a pair of keys for RSA
@@ -255,7 +262,6 @@ module.exports = Coconut =
       currentText = atom.workspace.getActiveTextEditor().getText()
       console.log currentText
       console.log 'requested--yes'
-
       key.importKey serverKey, 'public'
       #Encrypt the string
       encryptedData = key.encrypt(currentText, 'base64')
@@ -302,12 +308,21 @@ module.exports = Coconut =
       #Join session event
       @addJoinSessionEvent()
 
-
   sync: ->
     if syncPanel.isVisible()
       syncPanel.hide()
     else
       syncPanel.show()
+
+  playAudioNote: ->
+    #Get cursor position
+    lineIndex = atom.workspace.getActiveTextEditor().getCursorBufferPosition()
+    #Get the text from current line
+    line = atom.workspace.getActiveTextEditor().lineTextForScreenRow(lineIndex.row)
+    #Get the beginning of the url
+    noteStart = str.search(':audio:')
+
+
 
   #Serializations and disposals
   deactivate: ->
