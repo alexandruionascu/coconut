@@ -316,7 +316,7 @@ module.exports = Coconut =
     line = atom.workspace.getActiveTextEditor().lineTextForScreenRow(lineIndex.row)
     #Get the beginning of the url
     noteStart = line.search(':audio:')
-    url = 'https://coconutaudio.blob.core.windows.net/recordings/' + line.substring(noteStart + 7, noteStart + 15) + '.mp4'
+    url = 'https://coconutaudio.blob.core.windows.net/recordings/' + line.substring(noteStart + 7, noteStart + 14) + '.mp4'
     #console.log line.substring(noteStart + 7, noteStart + 15)
 
     #:audio:9b89b7f
