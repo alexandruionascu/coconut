@@ -7,7 +7,7 @@
   {
     'label': 'Packages'
     'submenu': [
-      'label': 'coconut'
+      'label': 'Coconut'
       'submenu': [
         {
           'label': 'Start a new session'

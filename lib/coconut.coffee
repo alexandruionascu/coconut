@@ -3,7 +3,7 @@ NodeRsa = require('../node_modules/node-rsa')
 io = require('../node_modules/socket.io-client')
 #Connect to the node server
 socket = io.connect('http://localhost:3000')
-newGuid = require './aux_tools/guid'
+newGuid = require ('./aux_tools/guid')
 
 
 #Require QR Code generator
@@ -18,7 +18,7 @@ SyncView = require('./sync-view')
 FacebookView = require('./facebook-view')
 WhatsappView = require('./whatsapp-view')
 SlackView = require('./slack-view')
-{CompositeDisposable} = require 'atom'
+{CompositeDisposable} = require ('atom')
 
 startSessionView = null
 startSessionPanel = null
@@ -59,11 +59,10 @@ module.exports = Coconut =
 
 
   activate: (state) ->
-
+    #Generate Session ID
     guid = newGuid()
+    #Generate phone companion audio pair ID
     pairId = newGuid()
-
-
 
     #Add join session panel
     joinSessionView = new JoinSessionView()
@@ -87,35 +86,13 @@ module.exports = Coconut =
     slackView = new SlackView()
     slackPanel = atom.workspace.addRightPanel(item: slackView.element, visible: false)
 
-
-    #Add qr code in modal
-    $('.qr-text').append('<qr-code modulesize="10" data="' + pairId + '"></qr-code>')
-    $('.qr-text').focus()
-    #Hide sync panel at click
-    $('.qr-text').click ->
-      syncPanel.hide()
-
-    $('.facebook').append('<webview id="foo" src="https://www.messenger.com/" style="display:inline-block; width:640px; height:100%"></webview>')
-    $('.whatsapp').append('<webview id="foo" src="https://www.whatsapp.com/" style="display:inline-block; width:640px; height:100%"></webview>')
-    $('.slack').append('<webview id="foo" src="https://www.slack.com/signin/" style="display:inline-block; width:640px; height:100%"></webview>')
-
-
-    #Audio pair
-    socket.emit('pair audio', pairId)
-    socket.on 'pair id', ->
-        console.log 'Audio paired!'
-
-    #Receive audio note from companion
-    socket.on 'receive audio' , (data) ->
-      console.log data
-      atom.workspace.getActiveTextEditor().insertText(':audio:' + data)
-
+    @addAudioPairEvent()
+    @addSocialPanels()
 
     # Events subscribed to in atom's system can be easily cleaned up with a CompositeDisposable
     subscriptions = new CompositeDisposable
 
-    # Register command that toggles this view
-    subscriptions.add atom.commands.add 'atom-workspace', 'coconut:toggle': => @toggle()
+    # Register command that toggles views
     subscriptions.add atom.commands.add '.editor', 'coconut:playAudioNote': => @playAudioNote()
     subscriptions.add atom.commands.add 'atom-workspace', 'coconut:startSession': => @startSession()
     subscriptions.add atom.commands.add 'atom-workspace', 'coconut:joinSession': => @joinSession()
@@ -124,18 +101,15 @@ module.exports = Coconut =
     subscriptions.add atom.commands.add 'atom-workspace', 'coconut:whatsappToggle': => @whatsappToggle()
     subscriptions.add atom.commands.add 'atom-workspace', 'coconut:slackToggle': => @slackToggle()
 
-
     #Generate a pair of keys for RSA
     @generateKeys()
     #Get server's key
     @getServerKey()
 
-    #Audio sync
-    socket.emit('audio sync', pairId)
+    #Alert when socket is disconnected
+    @addDisconnectEvent()
 
-    #Socket disconnect event
-    socket.on 'disconnect', ->
-      alert 'You have been disconnected, please reload the window.'
+
 
   generateKeys: ->
     #Set key's length to 512 bits
@@ -194,13 +168,14 @@ module.exports = Coconut =
         sessionId : guid
         publicKey: clientKey
       socket.emit('join room', dataObject)
+
       #Get the current text of the session
       socket.on 'init' , (data) ->
-        #  key.importKey clientKey, 'public'
-        #  decrypted = key.decrypt(data, 'utf8')
-        console.log 'synced : ' + data
+        key.importKey clientKey, 'public'
+        decrypted = key.decrypt(data, 'utf8')
+        console.log 'synced : ' + decrypted
         triggerEvent = false
-        atom.workspace.getActiveTextEditor().insertText(data)
+        atom.workspace.getActiveTextEditor().insertText(decrypted)
         triggerEvent = true
       #Hide modal
       joinSessionPanel.hide()
@@ -263,6 +238,32 @@ module.exports = Coconut =
       socket.emit('init', encryptedData)
 
 
+  addAudioPairEvent: ->
+    #Audio pair
+    socket.emit('audio sync', pairId)
+    socket.emit('pair audio', pairId)
+    console.log "Audio key sent to server"
+    socket.on 'pair id', ->
+        console.log 'Audio paired!'
+
+    #Receive audio note from companion
+    socket.on 'receive audio' , (data) ->
+      console.log data
+      atom.workspace.getActiveTextEditor().insertText(':audio:' + data)
+
+    #Add qr code in modal
+    $('.qr-text').append('<qr-code modulesize="10" data="' + pairId + '"></qr-code>')
+    $('.qr-text').focus()
+    #Hide sync panel at click
+    $('.qr-text').click ->
+      syncPanel.hide()
+
+  addSocialPanels: ->
+    $('.facebook').append('<webview id="foo" src="https://www.messenger.com/" style="display:inline-block; width:640px; height:100%"></webview>')
+    $('.whatsapp').append('<webview id="foo" src="https://www.whatsapp.com/" style="display:inline-block; width:640px; height:100%"></webview>')
+    $('.slack').append('<webview id="foo" src="https://www.slack.com/signin/" style="display:inline-block; width:640px; height:100%"></webview>')
+
+
   facebookToggle: ->
     if facebookPanel.isVisible()
       facebookPanel.hide()
@@ -317,18 +318,17 @@ module.exports = Coconut =
     #Get the beginning of the url
     noteStart = line.search(':audio:')
     url = 'https://coconutaudio.blob.core.windows.net/recordings/' + line.substring(noteStart + 7, noteStart + 14) + '.mp4'
-    #console.log line.substring(noteStart + 7, noteStart + 15)
-
-    #:audio:9b89b7f
 
     if noteStart != -1
       #Then found, play audio note
       audioElement = document.createElement('audio')
       audioElement.setAttribute('src', url)
-      #audioElement.setAttribute('autoplay', 'autoplay')
-
       audioElement.play();
 
+  addDisconnectEvent: ->
+    #Socket disconnect event
+    socket.on 'disconnect', ->
+      alert 'You have been disconnected, please reload the window.'
 
 
   #Serializations and disposals
