@@ -2,7 +2,7 @@ window.$ = window.jQuery = require('../node_modules/jquery')
 NodeRsa = require('../node_modules/node-rsa')
 io = require('../node_modules/socket.io-client')
 #Connect to the node server
-socket = io.connect('http://localhost:3000')
+socket = io.connect('https://obscure-bastion-3934.herokuapp.com/')
 newGuid = require ('./aux_tools/guid')
 
 
@@ -125,7 +125,7 @@ module.exports = Coconut =
   getServerKey: ->
     #Gets server public key for RSA Encryption
     $.ajax
-      url: "http://localhost:3000/key"
+      url: "https://obscure-bastion-3934.herokuapp.com/key"
       dataType: "html"
       async : false
       error: (jqXHR, textStatus, errorThrown) ->
