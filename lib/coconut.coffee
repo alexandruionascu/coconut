@@ -144,8 +144,6 @@ module.exports = Coconut =
       atom.clipboard.write(guid)
       #Hide the modal
       startSessionPanel.hide()
-      atom.workspace.activatePreviousPane()
-      atom.workspace.activatePreviousPane()
 
     #Join the room
     dataObject =
