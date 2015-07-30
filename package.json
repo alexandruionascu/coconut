@@ -6,7 +6,7 @@
   "keywords": [
   ],
   "activationCommands": {
-    "atom-workspace": ["coconut:startSession", "coconut:joinSession", "coconut:toggle", "coconut:sync", "coconut:facebookToggle", "coconut:whatsappToggle", "coconut:slackToggle"]
+    "atom-workspace": ["coconut:startSession", "coconut:joinSession", "coconut:sync", "coconut:facebookToggle", "coconut:whatsappToggle", "coconut:slackToggle"]
   },
   "repository": "https://github.com/atom/coconut",
   "license": "MIT",

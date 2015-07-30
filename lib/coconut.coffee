@@ -144,13 +144,14 @@ module.exports = Coconut =
       atom.clipboard.write(guid)
       #Hide the modal
       startSessionPanel.hide()
+      atom.workspace.activatePreviousPane()
+      atom.workspace.activatePreviousPane()
 
     #Join the room
     dataObject =
       sessionId : guid
       publicKey: clientKey
     socket.emit('join room', dataObject)
-    #atom.workspace.getActiveTextEditor().insertText 'bai '
     @addReceiveChangeEvent(atom.workspace.getActiveTextEditor().buffer)
     @addEmitChangeEvent(atom.workspace.getActiveTextEditor().buffer)
     @addRequestInitEvent()
@@ -205,7 +206,6 @@ module.exports = Coconut =
   addReceiveChangeEvent: (buffer) ->
       #Add socket change event
       socket.on 'message', (data) ->
-        console.log 'Received a message from a buddy'
         key.importKey clientKey, 'public'
         decrypted = key.decrypt(data, 'utf8')
         #Parse data into an object
@@ -294,6 +294,9 @@ module.exports = Coconut =
       #Start session event
       @addStartSessionEvent()
 
+
+
+
   joinSession: ->
     console.log "Joined session"
     if joinSessionPanel.isVisible()
@@ -302,6 +305,7 @@ module.exports = Coconut =
       joinSessionPanel.show()
       #Join session event
       @addJoinSessionEvent()
+
 
   sync: ->
     if syncPanel.isVisible()
