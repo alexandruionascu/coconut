@@ -1,14 +1,14 @@
 {
   "name": "coconut",
   "main": "./lib/coconut",
-  "version": "0.0.0",
-  "description": "A short description of your package",
+  "version": "0.9.0",
+  "description": "Fast and secure paired programming tool. It has integrated audio notes with an Android Smartphone and Facebook, WhatsApp and Slack Views",
   "keywords": [
   ],
   "activationCommands": {
     "atom-workspace": ["coconut:startSession", "coconut:joinSession", "coconut:sync", "coconut:facebookToggle", "coconut:whatsappToggle", "coconut:slackToggle"]
   },
-  "repository": "https://github.com/atom/coconut",
+  "repository": "https://github.com/alexandruionascu/coconut",
   "license": "MIT",
   "engines": {
     "atom": ">=1.0.0 <2.0.0"
