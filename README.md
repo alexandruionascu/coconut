@@ -9,7 +9,7 @@ Coconut is a paired programming package for Atom. It works fast and secure and i
 <br />
 [Coconut companion repository](https://github.com/alexandruionascu/coconut-companion)
 <br />
-Coconut Android Companion APP
+Coconut Android Companion App
 <br />
 <br />
 ![Coconut Companion](https://raw.githubusercontent.com/alexandruionascu/coconut/master/companion.jpg)
