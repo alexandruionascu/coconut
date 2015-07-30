@@ -124,12 +124,6 @@ module.exports = Coconut =
     subscriptions.add atom.commands.add 'atom-workspace', 'coconut:whatsappToggle': => @whatsappToggle()
     subscriptions.add atom.commands.add 'atom-workspace', 'coconut:slackToggle': => @slackToggle()
 
-    audioElement = document.createElement('audio')
-    audioElement.setAttribute('src', 'https://coconutaudio.blob.core.windows.net/recordings/9b89b7f.mp4')
-    audioElement.setAttribute('autoplay', 'autoplay')
-
-    audioElement.play();
-
 
     #Generate a pair of keys for RSA
     @generateKeys()
@@ -314,13 +308,26 @@ module.exports = Coconut =
     else
       syncPanel.show()
 
+
   playAudioNote: ->
     #Get cursor position
     lineIndex = atom.workspace.getActiveTextEditor().getCursorBufferPosition()
     #Get the text from current line
     line = atom.workspace.getActiveTextEditor().lineTextForScreenRow(lineIndex.row)
     #Get the beginning of the url
-    noteStart = str.search(':audio:')
+    noteStart = line.search(':audio:')
+    url = 'https://coconutaudio.blob.core.windows.net/recordings/' + line.substring(noteStart + 7, noteStart + 15) + '.mp4'
+    #console.log line.substring(noteStart + 7, noteStart + 15)
+
+    #:audio:9b89b7f
+
+    if noteStart != -1
+      #Then found, play audio note
+      audioElement = document.createElement('audio')
+      audioElement.setAttribute('src', url)
+      #audioElement.setAttribute('autoplay', 'autoplay')
+
+      audioElement.play();
 
 
 
