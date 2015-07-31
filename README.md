@@ -6,7 +6,7 @@ Coconut is a paired programming package for Atom. It works fast and secure and i
 ### Install
 
     apm install coconut
-    npm install -g gulp
+
 
 [Coconut server repository](https://github.com/alexandruionascu/coconut_server)
 
