@@ -8,14 +8,14 @@ Coconut is a paired programming package for Atom. It works fast and secure and i
     apm install coconut
 
 
-[Coconut server repository](https://github.com/alexandruionascu/coconut_server)
+#[Coconut server repository](https://github.com/alexandruionascu/coconut_server)
 
 
 ![Coconut package demo](https://raw.githubusercontent.com/alexandruionascu/coconut/master/coconut_demo.gif)
 <br />
 #[Coconut companion repository](https://github.com/alexandruionascu/coconut-companion)
 <br />
-[Coconut Android Companion App](https://play.google.com/store/apps/details?id=hubclub.coconutcompanion&hl=en)
+[Get Coconut Android Companion from Google Play Store ](https://play.google.com/store/apps/details?id=hubclub.coconutcompanion&hl=en)
 <br />
 <br />
 ![Coconut Companion](https://raw.githubusercontent.com/alexandruionascu/coconut/master/companion.jpg)
