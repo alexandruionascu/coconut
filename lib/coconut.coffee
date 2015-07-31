@@ -34,6 +34,8 @@ whatsappPanel = null
 #Prevent infinite looping
 triggerEvent = true
 
+synced = false
+
 
 #Session ID
 guid = null
@@ -187,12 +189,16 @@ module.exports = Coconut =
 
       #Get the current text of the session
       socket.on 'init' , (data) ->
+        if synced
+          return
         key.importKey clientKey, 'public'
         decrypted = key.decrypt(data, 'utf8')
         console.log 'synced : ' + decrypted
         triggerEvent = false
         atom.workspace.getActiveTextEditor().insertText(decrypted)
+        synced = true
         triggerEvent = true
+
       #Hide modal
       joinSessionPanel.hide()
 
