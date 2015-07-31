@@ -144,6 +144,11 @@ module.exports = Coconut =
 
   #Start session and copy to clipboard event
   addStartSessionEvent: ->
+    #Check if there aren't any tabs open
+    if !atom.workspace.getActiveTextEditor()
+      startSessionPanel.hide()
+      alert 'Please open at least an editor.'
+      return
     #Button click event
     $('.copy').click ->
       console.log guid
@@ -165,6 +170,11 @@ module.exports = Coconut =
 
   #Join the room typed by the user
   addJoinSessionEvent: ->
+    #Check if there aren't any tabs open
+    if !atom.workspace.getActiveTextEditor()
+      joinSessionPanel.hide()
+      alert 'Please open at least an editor.'
+      return
     #Join button click event
     $('.button').click ->
       #Join the room coresponding to the Session ID
