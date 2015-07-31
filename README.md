@@ -13,3 +13,9 @@ Coconut Android Companion App
 <br />
 <br />
 ![Coconut Companion](https://raw.githubusercontent.com/alexandruionascu/coconut/master/companion.jpg)
+
+
+<br />
+<br />
+Coconut includes Slack, Trello, Whats'App and Facebook for better productivity.
+![Coconut Panels](https://raw.githubusercontent.com/alexandruionascu/coconut/master/coconut_panels.png)
