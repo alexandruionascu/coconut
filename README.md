@@ -13,9 +13,9 @@ Coconut is a paired programming package for Atom. It works fast and secure and i
 
 ![Coconut package demo](https://raw.githubusercontent.com/alexandruionascu/coconut/master/coconut_demo.gif)
 <br />
-[Coconut companion repository](https://github.com/alexandruionascu/coconut-companion)
+#[Coconut companion repository](https://github.com/alexandruionascu/coconut-companion)
 <br />
-Coconut Android Companion App
+[Coconut Android Companion App](https://play.google.com/store/apps/details?id=hubclub.coconutcompanion&hl=en)
 <br />
 <br />
 ![Coconut Companion](https://raw.githubusercontent.com/alexandruionascu/coconut/master/companion.jpg)
