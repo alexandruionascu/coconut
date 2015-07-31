@@ -2,6 +2,12 @@
 
 Coconut is a paired programming package for Atom. It works fast and secure and it can be used with an Android companion app. The companion app can send audio notes in user's code.
 
+
+### Install
+
+    apm install coconut
+    npm install -g gulp
+
 [Coconut server repository](https://github.com/alexandruionascu/coconut_server)
 
 
