@@ -1,7 +1,7 @@
 {
   "name": "coconut",
   "main": "./lib/coconut",
-  "version": "0.14.0",
+  "version": "0.15.0",
   "description": "Fast and secure paired programming tool. It has integrated audio notes with an Android Smartphone and Facebook, WhatsApp and Slack Views",
   "keywords": [],
   "activationCommands": {
